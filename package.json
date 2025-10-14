@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:bundle": "tsup src/index.ts --format cjs --dts --out-dir dist --target node14 --clean",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -19,6 +20,7 @@
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "tsup": "^6.7.0"
   }
 }

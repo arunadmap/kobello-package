@@ -1,20 +1,120 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./getFile"), exports);
-__exportStar(require("./updateFile"), exports);
-__exportStar(require("./types/getFileTypes"), exports);
-__exportStar(require("./types/updateFileTypes"), exports);
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  createFile: () => createFile,
+  deleteFile: () => deleteFile,
+  getFile: () => getFile,
+  updateFile: () => updateFile
+});
+module.exports = __toCommonJS(src_exports);
+
+// src/getFile.ts
+async function getFile(fileName, filePath) {
+  try {
+    const response = await fetch("http://localhost:5050/api/v1/file/get", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ fileName, filePath })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error fetching file content:", errorData.error);
+      return null;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Request failed:", error);
+    return null;
+  }
+}
+
+// src/updateFile.ts
+async function updateFile(data) {
+  const response = await fetch("http://localhost:5050/api/v1/file/update", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to update file");
+  }
+  return response.json();
+}
+
+// src/createFile.ts
+async function createFile(data) {
+  try {
+    const response = await fetch("http://localhost:5050/api/v1/file/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error creating file:", errorData.error);
+      return null;
+    }
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Request failed:", error);
+    return null;
+  }
+}
+
+// src/deleteFile.ts
+async function deleteFile(data) {
+  try {
+    const response = await fetch("http://localhost:5050/api/v1/file/delete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error deleting file:", errorData.error);
+      return null;
+    }
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Request failed:", error);
+    return null;
+  }
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  createFile,
+  deleteFile,
+  getFile,
+  updateFile
+});
