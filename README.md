@@ -18,6 +18,8 @@ if (kobello.isAvailable()) {
 
 Your app also needs a `kobello.json` manifest that declares the permissions it uses (`storage`, `files`, `notifications`, `links`).
 
+**New to Kobello apps? Read the [guide](docs/GUIDE.md)** and look at the [Notes example](examples/notes).
+
 ## API
 
 | Module | Methods |
