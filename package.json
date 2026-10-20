@@ -28,6 +28,19 @@
     }
   },
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "shell": [
+        "./dist/shell.d.ts"
+      ],
+      "mock": [
+        "./dist/mock.d.ts"
+      ],
+      "protocol": [
+        "./dist/protocol.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist"
   ],

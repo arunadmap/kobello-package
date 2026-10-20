@@ -12,8 +12,12 @@ export const shell = {
     list: (): Promise<InstalledApp[]> => call('shell.apps.list'),
     /** Looks at a URL before installing: a Kobello app (with its manifest) or a plain website. */
     inspect: (url: string): Promise<InspectResult> => call('shell.apps.inspect', { url }),
-    /** Installs a Kobello app or adds a website. `name` overrides the detected name. */
-    install: (url: string, name?: string): Promise<InstalledApp> => call('shell.apps.install', { url, name }),
+    /**
+     * Installs a Kobello app or adds a website. `name` overrides the detected name.
+     * `offlineReady` is true once the app's service worker has cached it, so it opens without internet.
+     */
+    install: (url: string, name?: string): Promise<InstalledApp & { offlineReady: boolean }> =>
+      call('shell.apps.install', { url, name }),
     /** Renames an app or changes its icon. */
     update: (appId: string, changes: { name?: string; iconUrl?: string }): Promise<InstalledApp> =>
       call('shell.apps.update', { appId, ...changes }),

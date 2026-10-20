@@ -17,6 +17,7 @@ export type ErrorCode =
   | 'ALREADY_EXISTS'
   | 'QUOTA_EXCEEDED'
   | 'RATE_LIMITED'
+  | 'NETWORK_ERROR'      // the app's website couldn't be reached (for example while offline)
   | 'UNSUPPORTED'        // the host is older than the SDK and doesn't know the method
   | 'INTERNAL';
 
@@ -104,7 +105,7 @@ export interface Methods {
   // Shell-only methods: the host rejects them from anything but Kobello UI.
   'shell.apps.list': { args: void; result: InstalledApp[] };
   'shell.apps.inspect': { args: { url: string }; result: InspectResult };
-  'shell.apps.install': { args: { url: string; name?: string }; result: InstalledApp };
+  'shell.apps.install': { args: { url: string; name?: string }; result: InstalledApp & { offlineReady: boolean } };
   'shell.apps.update': { args: { appId: string; name?: string; iconUrl?: string }; result: InstalledApp };
   'shell.apps.uninstall': { args: { appId: string; deleteData: boolean }; result: void };
   'shell.views.show': { args: { appId: string; bounds: Bounds }; result: void };

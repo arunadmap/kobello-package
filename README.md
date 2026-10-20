@@ -30,7 +30,7 @@ Your app also needs a `kobello.json` manifest that declares the permissions it u
 | `kobello.links` | `open(url)` |
 
 File paths are relative to your app's own folder and use `/`.
-Every method returns a Promise. Failures reject with `KobelloError`; check `error.code` (`NOT_AVAILABLE`, `PERMISSION_DENIED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `ALREADY_EXISTS`, `QUOTA_EXCEEDED`, `RATE_LIMITED`, `UNSUPPORTED`, `INTERNAL`).
+Every method returns a Promise. Failures reject with `KobelloError`; check `error.code` (`NOT_AVAILABLE`, `PERMISSION_DENIED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `ALREADY_EXISTS`, `QUOTA_EXCEEDED`, `RATE_LIMITED`, `NETWORK_ERROR`, `UNSUPPORTED`, `INTERNAL`).
 
 ## Testing without the desktop app
 
