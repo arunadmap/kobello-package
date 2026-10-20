@@ -1,26 +1,50 @@
 {
-  "name": "kobello-package",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "@kobello/sdk",
+  "version": "0.1.0",
+  "description": "The API Kobello apps use to talk to the Kobello desktop app.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./shell": {
+      "types": "./dist/shell.d.ts",
+      "import": "./dist/shell.js",
+      "default": "./dist/shell.js"
+    },
+    "./mock": {
+      "types": "./dist/mock.d.ts",
+      "import": "./dist/mock.js",
+      "default": "./dist/mock.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js",
+      "default": "./dist/protocol.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "keywords": [
+    "kobello",
+    "sdk",
+    "electron"
+  ],
   "scripts": {
-    "build": "tsc",
-    "build:bundle": "tsup src/index.ts --format cjs --dts --out-dir dist --target node14 --clean",
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "prepare": "npm run build"
   },
-  "keywords": [
-    "file",
-    "typescript",
-    "utils"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "tsup": "^6.7.0"
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.5"
   }
 }
