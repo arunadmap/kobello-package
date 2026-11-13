@@ -1,0 +1,10 @@
+{
+  "kobello": 1,
+  "id": "dev.kobello.notes",
+  "name": "Notes",
+  "version": "1.0.0",
+  "description": "Simple notes saved as files on your computer.",
+  "start_url": "/",
+  "icon": "/icon.svg",
+  "permissions": ["storage", "files", "notifications", "links"]
+}
