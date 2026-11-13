@@ -14,7 +14,8 @@ The code is in [src/App.tsx](src/App.tsx); the manifest Kobello reads is [public
 
 ## Run it
 
-The example uses the SDK from this repository (`file:../..`), so build the SDK first, in the repository root:
+The example uses the SDK from this repository (`"@kobello-electron/sdk": "file:../.."`), so build the SDK first, in the repository root.
+(Real apps install `@kobello-electron/sdk` from npm instead.)
 
 ```bash
 npm install && npm run build
