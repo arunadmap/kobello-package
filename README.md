@@ -34,6 +34,8 @@ Your app also needs a `kobello.json` manifest that declares the permissions it u
 | `kobello.links` | `open(url)` |
 
 File paths are relative to your app's own folder and use `/`.
+Limits: files up to 50 MB each (1 GB and 10,000 files and folders per app); storage values up to 1 MB each (10 MB per app) with keys up to 256 characters;
+notification titles up to 100 characters and bodies up to 500, at most 10 per minute; links must be `http`, `https` or `mailto`.
 Every method returns a Promise. Failures reject with `KobelloError`; check `error.code` (`NOT_AVAILABLE`, `PERMISSION_DENIED`, `INVALID_ARGUMENT`, `NOT_FOUND`, `ALREADY_EXISTS`, `QUOTA_EXCEEDED`, `RATE_LIMITED`, `NETWORK_ERROR`, `UNSUPPORTED`, `INTERNAL`).
 `isKobelloError(error)` checks for one, and keeps working if your bundle ends up with two copies of the SDK (where `instanceof` doesn't).
 
@@ -69,7 +71,14 @@ npm test           # unit tests
 npm run typecheck
 ```
 
-`npm publish` runs the type check, tests and build first (`prepublishOnly`).
+## Releasing
+
+For maintainers:
+
+1. Bump `version` in `package.json` **and** `SDK_VERSION` in `src/index.ts` (a test checks that they match).
+2. Run `npm publish`. `prepublishOnly` runs the type check, tests and build first, and `publishConfig` makes the package public.
+
+Your npm account must be a member of the `kobello-electron` org, and npm will ask for your 2FA code.
 
 ## License
 
