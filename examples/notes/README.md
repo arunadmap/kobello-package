@@ -14,6 +14,14 @@ The code is in [src/App.tsx](src/App.tsx); the manifest Kobello reads is [public
 
 ## Run it
 
+The example uses the SDK from this repository (`file:../..`), so build the SDK first, in the repository root:
+
+```bash
+npm install && npm run build
+```
+
+Then, in this folder:
+
 ```bash
 npm install
 npm run dev        # http://127.0.0.1:5180, uses the in-memory mock when opened in a normal browser
@@ -27,4 +35,4 @@ npm run preview    # http://127.0.0.1:5181
 ```
 
 Then, in the Kobello desktop app running in developer mode, click **+** and add `http://127.0.0.1:5181`.
-The [guide](../../docs/GUIDE.md) explains each step.
+The [guide](https://github.com/arunadmap/kobello-package/blob/main/docs/GUIDE.md) explains each step.

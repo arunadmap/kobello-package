@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "The API Kobello apps use to talk to the Kobello desktop app.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arunadmap/kobello-package.git"
+  },
+  "homepage": "https://github.com/arunadmap/kobello-package#readme",
+  "bugs": {
+    "url": "https://github.com/arunadmap/kobello-package/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -53,7 +61,10 @@
     "build": "tsup",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

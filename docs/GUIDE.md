@@ -16,7 +16,7 @@ working offline.
 8. [Testing without Kobello](#8-testing-without-kobello)
 9. [Publishing](#9-publishing)
 
-A complete example is in [examples/notes](../examples/notes).
+A complete example is in [examples/notes](https://github.com/arunadmap/kobello-package/tree/main/examples/notes).
 
 ---
 
@@ -48,6 +48,8 @@ npm install -D vite-plugin-pwa
 
 > **Before `@kobello/sdk` is published on npm**, install it from a local copy instead:
 > `npm install ../path/to/kobello-package` (build it first with `npm install && npm run build` in that folder).
+
+`@kobello/sdk` is ESM-only: use `import`, not `require`. Every modern bundler (Vite, webpack, esbuild, Rollup) handles that.
 
 **Add `public/kobello.json`** (Vite serves `public/` at the root of your site):
 
@@ -117,16 +119,17 @@ Your app now runs in Kobello with the SDK available.
 > `npm run build && npm run preview` and add the preview address instead.
 
 > **One address per app ID.** Kobello ties an app's `id` to the address it was installed from.
-> To switch from the dev address to the preview address, remove the app first (right-click its icon → Remove).
+> Adding the app again from the same address updates it. To switch from the dev address to the preview
+> address, remove the app first (right-click its icon → Remove).
 
 ## 4. The manifest and permissions
 
 | Field | Required | Description |
 |---|---|---|
 | `kobello` | yes | Always `1` |
-| `id` | yes | A unique, permanent ID in reverse-domain style, e.g. `com.example.notes`. Lowercase letters, numbers, dots and dashes. Changing it later makes a different app with different data. |
+| `id` | yes | A unique, permanent ID in reverse-domain style, e.g. `com.example.notes`: at least two parts separated by dots, using lowercase letters, numbers and dashes (the first part has no dashes). Changing it later makes a different app with different data. |
 | `name` | yes | Shown in the sidebar (1–80 characters). Users can rename it. |
-| `version` | yes | Your app's version, e.g. `1.2.0` |
+| `version` | yes | Your app's version, e.g. `1.2.0`. Kobello records it when the app is added (see `kobello.app.info()`). |
 | `permissions` | yes | What the app may use (see below). Can be empty. |
 | `start_url` | no | The page to open, on the same site. Default `/`. |
 | `icon` | no | Path or URL of the sidebar icon. Square, at least 128×128 (SVG is ideal). |
@@ -143,7 +146,11 @@ Your app now runs in Kobello with the SDK available.
 
 `kobello.app.info()` and `kobello.host()` need no permission.
 
-When you add a permission in a new version, the user has to install the app again (remove it, then add it) to approve it.
+Kobello grants only the permissions the user approved when they added the app. If a new version of your
+`kobello.json` asks for more, calls that need the new permission get `PERMISSION_DENIED` until the user adds
+the app again (**+**, same address). Kobello then shows them the permissions again to approve. Adding it again
+from the same address updates the installed app and keeps its data; there's no need to remove it first.
+Check `(await kobello.app.info()).permissions` if you want to tell the user a feature needs this.
 
 ## 5. API reference
 
@@ -157,10 +164,10 @@ import { kobello, KobelloError } from '@kobello/sdk';
 
 | | |
 |---|---|
-| `kobello.isAvailable()` | `true` inside Kobello. When `false`, every other method rejects with `NOT_AVAILABLE`. |
+| `kobello.isAvailable()` | `true` inside Kobello. When `false`, every other method rejects with `NOT_AVAILABLE`, except `notifications.onClick`, which does nothing (so it's safe to set up anywhere). |
 | `kobello.version` | The SDK's version |
 | `kobello.host()` | `{ version, platform, protocol }` of the Kobello desktop app |
-| `kobello.app.info()` | `{ id, name, version, permissions }` of your app |
+| `kobello.app.info()` | `{ id, name, version, permissions }` of your app. `version` and `permissions` are the ones recorded when the user added the app (or last added it again), not necessarily what your server serves now. |
 
 ### Storage (`storage` permission)
 
@@ -204,7 +211,8 @@ const stop = kobello.notifications.onClick((id, tag) => {
 stop(); // stop listening
 ```
 
-Kobello puts your app's name in front of the title.
+Kobello puts your app's name in front of the title. Outside Kobello, `onClick` does nothing and returns a
+no-op, so you can call it in a React effect without checking `isAvailable()` first.
 
 ### Links (`links` permission)
 
@@ -220,10 +228,12 @@ the user's browser automatically, without needing this permission.
 Failures reject with a `KobelloError`. Check its `code`:
 
 ```ts
+import { isKobelloError, kobello } from '@kobello/sdk';
+
 try {
   await kobello.files.read('missing.txt');
 } catch (error) {
-  if (error instanceof KobelloError && error.code === 'NOT_FOUND') {
+  if (isKobelloError(error) && error.code === 'NOT_FOUND') {
     // first run: nothing saved yet
   } else {
     throw error;
@@ -231,18 +241,21 @@ try {
 }
 ```
 
+`isKobelloError(error)` works like `error instanceof KobelloError`, but also when your bundle ends up with
+two copies of the SDK (for example one inside a library you use).
+
 | Code | Meaning |
 |---|---|
 | `NOT_AVAILABLE` | Not running inside Kobello |
 | `PERMISSION_DENIED` | The permission isn't in your `kobello.json`, or the call came from somewhere other than your app's own pages (another site your app navigated to, or an iframe) |
-| `INVALID_ARGUMENT` | A wrong value: a path leaving your folder, an unsupported link, a value that isn't JSON… |
+| `INVALID_ARGUMENT` | A wrong value: a path leaving your folder or using a name Windows can't store, an unsupported link, a value that isn't JSON, a string that's too long… |
 | `NOT_FOUND` | No such file or folder |
 | `ALREADY_EXISTS` | `mkdir` or `rename` target already exists |
-| `QUOTA_EXCEEDED` | Over a size limit |
+| `QUOTA_EXCEEDED` | Over a size or count limit (see below) |
 | `RATE_LIMITED` | Too many notifications |
 | `NETWORK_ERROR` | A site couldn't be reached |
-| `UNSUPPORTED` | The user's Kobello is older than your SDK and doesn't have this method |
-| `INTERNAL` | Something went wrong inside Kobello |
+| `UNSUPPORTED` | The user's Kobello is older than your SDK and doesn't have this method, or speaks a different protocol version |
+| `INTERNAL` | Something went wrong inside Kobello, or its answer didn't arrive |
 
 **Limits**
 
@@ -252,9 +265,12 @@ try {
 | Storage value | 1 MB |
 | Storage per app | 10 MB |
 | File size | 50 MB |
-| File path | 1024 characters; no `..`, `\`, `:`, absolute paths or Windows device names (`con`, `nul`…) |
-| Notification title / body | 100 / 500 characters |
+| Files per app | 1 GB in all, and at most 10,000 files and folders |
+| File path | 1024 characters; relative (no leading `/`); no `.` or `..` parts; none of `\` `:` `<` `>` `"` `\|` `?` `*`; no part ending in a dot or space; no Windows device names (`con`, `prn`, `aux`, `nul`, `com1`–`com9`, `lpt1`–`lpt9`), with or without an extension |
+| File data | A string (saved as UTF-8) or a `Uint8Array` |
+| Notification title / body / tag | 100 / 500 / 100 characters |
 | Notifications | 10 per minute |
+| Link URL | 4096 characters; `http:`, `https:` or `mailto:` |
 
 ## 7. Make your app work offline
 
@@ -299,7 +315,9 @@ async function start() {
 void start();
 ```
 
-**Unit tests** (Vitest, Jest…):
+`installMock()` throws if the page is already running inside Kobello, so it can't replace the real thing by accident.
+
+**Unit tests** (Vitest, or Jest set up for ES modules):
 
 ```ts
 import { installMock } from '@kobello/sdk/mock';
@@ -314,7 +332,12 @@ mock.emit('notification.clicked', { id: mock.notifications[0].id }); // simulate
 mock.uninstall();
 ```
 
-The mock checks permissions and paths like Kobello does, so permission mistakes show up in your tests.
+The mock checks the same rules as Kobello: permissions, paths, file and storage sizes, notification length
+and rate, and link types. Mistakes show up in your tests instead of in front of users.
+
+**Jest** runs CommonJS by default and won't load this ESM-only package from `node_modules`. Vitest works
+without setup. With Jest, let it transform the SDK, for example
+`transformIgnorePatterns: ['/node_modules/(?!@kobello/sdk)']` with Babel or ts-jest configured for ES modules.
 
 ## 9. Publishing
 
@@ -322,6 +345,7 @@ The mock checks permissions and paths like Kobello does, so permission mistakes 
    Make sure `/kobello.json` is served from the root of that address.
 2. Share the address. Users add it with **+** in Kobello.
 3. To update, deploy a new version. Kobello picks it up through your service worker the next time
-   the user is online. Bump `version` in `kobello.json`.
+   the user is online. Bump `version` in `kobello.json`. If the new version needs more permissions,
+   users add the app again to approve them (see [section 4](#4-the-manifest-and-permissions)).
 
 Keep your `id` the same forever: users' data is stored under it.

@@ -7,13 +7,19 @@
 //   links          the link to the guide, opened in the user's browser
 
 import { useCallback, useEffect, useState } from 'react';
-import { kobello, KobelloError, type FileInfo } from '@kobello/sdk';
+import { isKobelloError, kobello, type FileInfo } from '@kobello/sdk';
 
 const NOTES_DIR = 'notes';
-const GUIDE_URL = 'https://github.com/arunadmap/kobello-package#readme';
+const GUIDE_URL = 'https://github.com/arunadmap/kobello-package/blob/main/docs/GUIDE.md';
+
+// Names Windows keeps for devices ("con.md" can't be a file there), so Kobello refuses them.
+const RESERVED_NAMES = /^(con|prn|aux|nul|com\d|lpt\d)$/;
 
 /** "Shopping list!" → "shopping-list". File names only use letters, numbers and dashes. */
-const toFileName = (title: string) => title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+const toFileName = (title: string) => {
+  const name = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+  return RESERVED_NAMES.test(name) ? `note-${name}` : name;
+};
 const titleOf = (file: FileInfo) => file.name.replace(/\.md$/, '');
 
 export default function App() {
@@ -31,7 +37,7 @@ function Notes() {
   const [error, setError] = useState('');
 
   /** Shows an SDK error to the user. */
-  const report = (cause: unknown) => setError(cause instanceof KobelloError ? cause.message : String(cause));
+  const report = (cause: unknown) => setError(isKobelloError(cause) ? cause.message : String(cause));
 
   /** The notes folder, newest first. It doesn't exist until the first note is saved. */
   const refresh = useCallback(async () => {
@@ -39,7 +45,7 @@ function Notes() {
       const files = await kobello.files.list(NOTES_DIR);
       setNotes(files.filter(file => file.type === 'file').sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt)));
     } catch (cause) {
-      if (cause instanceof KobelloError && cause.code === 'NOT_FOUND') setNotes([]);
+      if (isKobelloError(cause) && cause.code === 'NOT_FOUND') setNotes([]);
       else throw cause;
     }
   }, []);

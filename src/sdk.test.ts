@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { kobello, KobelloError, SDK_VERSION } from './index';
+import { afterEach, describe, expect, expectTypeOf, it } from 'vitest';
+import { isKobelloError, kobello, KobelloError, SDK_VERSION } from './index';
 import { shell } from './shell';
 import type { Bridge, Response } from './protocol';
 import pkg from '../package.json';
@@ -31,6 +31,57 @@ describe('outside Kobello', () => {
     expect(kobello.isAvailable()).toBe(false);
     await expect(kobello.storage.get('x')).rejects.toMatchObject({ code: 'NOT_AVAILABLE' });
   });
+
+  it('lets apps listen anyway, without doing anything', () => {
+    const stop = kobello.notifications.onClick(() => {});
+    const stopShortcut = shell.onShortcut(() => {});
+    expect(() => { stop(); stopShortcut(); }).not.toThrow();
+  });
+});
+
+describe('a broken or different host', () => {
+  it('turns a rejected call into INTERNAL', async () => {
+    fakeBridge(() => { throw new Error('IPC closed'); });
+    const error = await kobello.storage.keys().catch((e) => e);
+    expect(error).toBeInstanceOf(KobelloError);
+    expect(error).toMatchObject({ code: 'INTERNAL' });
+    expect(error.message).toContain('IPC closed');
+  });
+
+  it('turns a malformed answer into INTERNAL', async () => {
+    for (const answer of [undefined, null, 'yes', {}, { ok: false }, { ok: false, error: { code: 1 } }]) {
+      fakeBridge(() => answer as unknown as Response);
+      await expect(kobello.storage.keys()).rejects.toMatchObject({ code: 'INTERNAL' });
+    }
+  });
+
+  it('refuses a host that speaks another protocol version', async () => {
+    const { calls } = fakeBridge();
+    (globalThis.__kobello as Bridge).v = 2;
+    await expect(kobello.host()).rejects.toMatchObject({ code: 'UNSUPPORTED', message: expect.stringContaining('protocol 2') });
+    expect(calls).toEqual([]);
+  });
+});
+
+describe('isKobelloError', () => {
+  it('recognises errors from this and from another copy of the SDK', () => {
+    // Another copy of the SDK has its own class, so instanceof fails but the name and code match.
+    class OtherKobelloError extends Error { code = 'NOT_FOUND'; name = 'KobelloError'; }
+    expect(isKobelloError(new KobelloError('NOT_FOUND', 'x'))).toBe(true);
+    expect(isKobelloError(new OtherKobelloError('x'))).toBe(true);
+    expect(isKobelloError(new Error('x'))).toBe(false);
+    expect(isKobelloError({ name: 'KobelloError', code: 'NOT_FOUND' })).toBe(false);
+    expect(isKobelloError(null)).toBe(false);
+  });
+});
+
+it('types files.read by its encoding', () => {
+  // Type-only checks: `npm run typecheck` fails if the overloads change. Nothing is called.
+  const read = kobello.files.read;
+  const encoding = 'binary' as 'utf8' | 'binary';
+  expectTypeOf(() => read('a.txt')).returns.resolves.toEqualTypeOf<string>();
+  expectTypeOf(() => read('a.bin', { encoding: 'binary' })).returns.resolves.toEqualTypeOf<Uint8Array>();
+  expectTypeOf(() => read('a', { encoding })).returns.resolves.toEqualTypeOf<string | Uint8Array>();
 });
 
 describe('calls to the host', () => {

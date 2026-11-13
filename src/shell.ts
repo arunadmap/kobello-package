@@ -2,7 +2,7 @@
 // The host rejects these with PERMISSION_DENIED when any other app calls them.
 
 import { call, listen } from './transport';
-import type { Bounds, InspectResult, InstalledApp } from './protocol';
+import type { Bounds, InspectResult, InstalledApp, Permission } from './protocol';
 
 export type { AppManifest, Bounds, InspectResult, InstalledApp } from './protocol';
 
@@ -14,10 +14,12 @@ export const shell = {
     inspect: (url: string): Promise<InspectResult> => call('shell.apps.inspect', { url }),
     /**
      * Installs a Kobello app or adds a website. `name` overrides the detected name.
+     * `permissions` are the ones the user approved (from `inspect`). If the app's kobello.json now asks
+     * for any other permission, the host refuses with PERMISSION_DENIED. Websites ignore it.
      * `offlineReady` is true once the app's service worker has cached it, so it opens without internet.
      */
-    install: (url: string, name?: string): Promise<InstalledApp & { offlineReady: boolean }> =>
-      call('shell.apps.install', { url, name }),
+    install: (url: string, options: { name?: string; permissions: Permission[] }): Promise<InstalledApp & { offlineReady: boolean }> =>
+      call('shell.apps.install', { url, name: options.name, permissions: options.permissions }),
     /** Renames an app or changes its icon. */
     update: (appId: string, changes: { name?: string; iconUrl?: string }): Promise<InstalledApp> =>
       call('shell.apps.update', { appId, ...changes }),
@@ -37,7 +39,10 @@ export const shell = {
     close: (appId: string): Promise<void> => call('shell.views.close', { appId }),
   },
 
-  /** Ctrl/Cmd+1–9 pressed anywhere in the window. Receives 1–9. Returns a function that stops listening. */
+  /**
+   * Ctrl/Cmd+1–9 pressed anywhere in the window. Receives 1–9. Returns a function that stops listening.
+   * Outside Kobello it does nothing.
+   */
   onShortcut: (callback: (number: number) => void): (() => void) =>
     listen('shell.shortcut', ({ number }) => callback(number)),
 };

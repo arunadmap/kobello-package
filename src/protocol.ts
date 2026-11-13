@@ -58,7 +58,6 @@ export interface AppManifest {
   start_url?: string;
   icon?: string;
   permissions: Permission[];
-  sdk?: string;
 }
 
 /** An entry in the user's sidebar: a Kobello app or a plain website. */
@@ -105,7 +104,7 @@ export interface Methods {
   // Shell-only methods: the host rejects them from anything but Kobello UI.
   'shell.apps.list': { args: void; result: InstalledApp[] };
   'shell.apps.inspect': { args: { url: string }; result: InspectResult };
-  'shell.apps.install': { args: { url: string; name?: string }; result: InstalledApp & { offlineReady: boolean } };
+  'shell.apps.install': { args: { url: string; name?: string; permissions: Permission[] }; result: InstalledApp & { offlineReady: boolean } };
   'shell.apps.update': { args: { appId: string; name?: string; iconUrl?: string }; result: InstalledApp };
   'shell.apps.uninstall': { args: { appId: string; deleteData: boolean }; result: void };
   'shell.views.show': { args: { appId: string; bounds: Bounds }; result: void };
@@ -118,7 +117,6 @@ export type Method = keyof Methods;
 
 /** Events the host pushes to a page, with their payloads. */
 export interface Events {
-  'storage.changed': { key: string };
   'notification.clicked': { id: string; tag?: string };
   'shell.shortcut': { number: number };
 }
@@ -138,4 +136,11 @@ export interface Bridge {
   v: number;
   invoke(method: string, args?: unknown): Promise<Response>;
   on(event: string, callback: (payload: unknown) => void): () => void;
+}
+
+// The bridge lives on the page's global object. Declared here, in the shared contract, so it's part of
+// the published type definitions (tests and the mock read and replace it).
+declare global {
+  // eslint-disable-next-line no-var
+  var __kobello: Bridge | undefined;
 }

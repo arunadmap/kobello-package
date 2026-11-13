@@ -6,7 +6,7 @@
 import { call, getBridge, listen } from './transport';
 import type { AppInfo, FileInfo, HostInfo, JsonValue, NotificationOptions } from './protocol';
 
-export { KobelloError } from './errors';
+export { isKobelloError, KobelloError } from './errors';
 export type { AppInfo, ErrorCode, FileInfo, HostInfo, JsonValue, NotificationOptions, Permission } from './protocol';
 
 /** Keep in sync with package.json (a test checks this). */
@@ -16,7 +16,10 @@ export const kobello = {
   /** SDK version. */
   version: SDK_VERSION,
 
-  /** True when running inside the Kobello desktop app. Every other method throws NOT_AVAILABLE when false. */
+  /**
+   * True when running inside the Kobello desktop app. When false, every method rejects with NOT_AVAILABLE,
+   * except the `on...` listeners, which do nothing (so they're safe to set up anywhere).
+   */
   isAvailable: (): boolean => getBridge() !== undefined,
 
   /** Version and platform of the Kobello desktop app. */
@@ -35,8 +38,6 @@ export const kobello = {
     delete: (key: string): Promise<void> => call('storage.delete', { key }),
     keys: (): Promise<string[]> => call('storage.keys'),
     clear: (): Promise<void> => call('storage.clear'),
-    /** Called when another window of this app changes a key. Returns a function that stops listening. */
-    onChange: (callback: (key: string) => void): (() => void) => listen('storage.changed', ({ key }) => callback(key)),
   },
 
   /**
@@ -49,6 +50,8 @@ export const kobello = {
       call('files.read', { path, encoding: options.encoding ?? 'utf8' })) as {
       (path: string, options?: { encoding?: 'utf8' }): Promise<string>;
       (path: string, options: { encoding: 'binary' }): Promise<Uint8Array>;
+      // When the encoding is only known at runtime.
+      (path: string, options: { encoding?: 'utf8' | 'binary' }): Promise<string | Uint8Array>;
     },
     /** Creates or replaces a file. Set createDirs to create missing parent folders. */
     write: (path: string, data: string | Uint8Array, options: { createDirs?: boolean } = {}): Promise<FileInfo> =>
@@ -69,7 +72,10 @@ export const kobello = {
   notifications: {
     /** Shows a notification and returns its id. */
     show: (options: NotificationOptions): Promise<string> => call('notifications.show', options),
-    /** Called when the user clicks one of this app's notifications. Returns a function that stops listening. */
+    /**
+     * Called when the user clicks one of this app's notifications. Returns a function that stops listening.
+     * Outside Kobello it does nothing.
+     */
     onClick: (callback: (id: string, tag?: string) => void): (() => void) =>
       listen('notification.clicked', ({ id, tag }) => callback(id, tag)),
   },
