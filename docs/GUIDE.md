@@ -26,7 +26,7 @@ A Kobello app is a normal web app (any framework, or none) with two extra things
 
 - **`/kobello.json`**, a small manifest at the root of your site. It names your app and lists the
   permissions it needs.
-- **`@kobello/sdk`**, the package your code uses to talk to Kobello: save data and files on the
+- **`@kobello-electron/sdk`**, the package your code uses to talk to Kobello: save data and files on the
   user's computer, show notifications, and open links in their browser.
 
 Kobello shows each app in its own window area, with its own private storage. An app can only reach
@@ -42,14 +42,14 @@ Create a web app. This guide uses [Vite](https://vite.dev) with React and TypeSc
 npm create vite@latest my-app -- --template react-ts
 cd my-app
 npm install
-npm install @kobello/sdk
+npm install @kobello-electron/sdk
 npm install -D vite-plugin-pwa
 ```
 
-> **Before `@kobello/sdk` is published on npm**, install it from a local copy instead:
+> **Before `@kobello-electron/sdk` is published on npm**, install it from a local copy instead:
 > `npm install ../path/to/kobello-package` (build it first with `npm install && npm run build` in that folder).
 
-`@kobello/sdk` is ESM-only: use `import`, not `require`. Every modern bundler (Vite, webpack, esbuild, Rollup) handles that.
+`@kobello-electron/sdk` is ESM-only: use `import`, not `require`. Every modern bundler (Vite, webpack, esbuild, Rollup) handles that.
 
 **Add `public/kobello.json`** (Vite serves `public/` at the root of your site):
 
@@ -68,7 +68,7 @@ npm install -D vite-plugin-pwa
 **Use the SDK** in your code:
 
 ```ts
-import { kobello } from '@kobello/sdk';
+import { kobello } from '@kobello-electron/sdk';
 
 if (kobello.isAvailable()) {
   const count = (await kobello.storage.get<number>('visits')) ?? 0;
@@ -157,7 +157,7 @@ Check `(await kobello.app.info()).permissions` if you want to tell the user a fe
 Everything is on the `kobello` object. Every method returns a Promise.
 
 ```ts
-import { kobello, KobelloError } from '@kobello/sdk';
+import { kobello, KobelloError } from '@kobello-electron/sdk';
 ```
 
 ### General
@@ -228,7 +228,7 @@ the user's browser automatically, without needing this permission.
 Failures reject with a `KobelloError`. Check its `code`:
 
 ```ts
-import { isKobelloError, kobello } from '@kobello/sdk';
+import { isKobelloError, kobello } from '@kobello-electron/sdk';
 
 try {
   await kobello.files.read('missing.txt');
@@ -296,18 +296,18 @@ If something is missing offline, it's usually a file your service worker didn't 
 
 ## 8. Testing without Kobello
 
-`@kobello/sdk/mock` is an in-memory stand-in for Kobello, for unit tests and for previewing your app
+`@kobello-electron/sdk/mock` is an in-memory stand-in for Kobello, for unit tests and for previewing your app
 in a normal browser. Nothing is saved: it resets when the page reloads.
 
 **Preview in the browser** (the example app does this in `src/main.tsx`). Install the mock before your
 app starts; the dynamic import keeps it out of production builds:
 
 ```ts
-import { kobello } from '@kobello/sdk';
+import { kobello } from '@kobello-electron/sdk';
 
 async function start() {
   if (import.meta.env.DEV && !kobello.isAvailable()) {
-    const { installMock } = await import('@kobello/sdk/mock');
+    const { installMock } = await import('@kobello-electron/sdk/mock');
     installMock({ app: { id: 'com.example.myapp', name: 'My app' } });
   }
   // ...then render your app
@@ -320,8 +320,8 @@ void start();
 **Unit tests** (Vitest, or Jest set up for ES modules):
 
 ```ts
-import { installMock } from '@kobello/sdk/mock';
-import { kobello } from '@kobello/sdk';
+import { installMock } from '@kobello-electron/sdk/mock';
+import { kobello } from '@kobello-electron/sdk';
 
 const mock = installMock({ app: { permissions: ['storage', 'notifications'] } });
 
@@ -337,7 +337,7 @@ and rate, and link types. Mistakes show up in your tests instead of in front of 
 
 **Jest** runs CommonJS by default and won't load this ESM-only package from `node_modules`. Vitest works
 without setup. With Jest, let it transform the SDK, for example
-`transformIgnorePatterns: ['/node_modules/(?!@kobello/sdk)']` with Babel or ts-jest configured for ES modules.
+`transformIgnorePatterns: ['/node_modules/(?!@kobello-electron/sdk)']` with Babel or ts-jest configured for ES modules.
 
 ## 9. Publishing
 

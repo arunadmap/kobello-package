@@ -1,4 +1,4 @@
-// @kobello/sdk/shell: extra methods for Kobello UI only.
+// @kobello-electron/sdk/shell: extra methods for Kobello UI only.
 // The host rejects these with PERMISSION_DENIED when any other app calls them.
 
 import { call, listen } from './transport';

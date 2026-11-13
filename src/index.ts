@@ -1,6 +1,6 @@
-// @kobello/sdk: the API Kobello apps use to talk to the Kobello desktop app.
+// @kobello-electron/sdk: the API Kobello apps use to talk to the Kobello desktop app.
 //
-//   import { kobello } from '@kobello/sdk';
+//   import { kobello } from '@kobello-electron/sdk';
 //   await kobello.storage.set('theme', 'dark');
 
 import { call, getBridge, listen } from './transport';

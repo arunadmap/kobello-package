@@ -1,9 +1,9 @@
-// @kobello/sdk/mock: an in-memory stand-in for the Kobello desktop app.
+// @kobello-electron/sdk/mock: an in-memory stand-in for the Kobello desktop app.
 // Use it in unit tests, or to preview an app in a normal browser while developing.
 // Nothing is saved: everything is lost when the page reloads.
 // It checks paths, sizes and rate limits the same way the real app does (see rules.ts).
 //
-//   import { installMock } from '@kobello/sdk/mock';
+//   import { installMock } from '@kobello-electron/sdk/mock';
 //   const mock = installMock({ app: { id: 'com.example.notes' } });
 
 import { isKobelloError } from './errors';
@@ -31,7 +31,7 @@ export interface MockControls {
 interface Entry { type: 'file' | 'dir'; data: Uint8Array; modifiedAt: string }
 
 /** Marks a bridge as a mock, so installMock can tell it apart from the real one (even across SDK copies). */
-const MOCK_MARK = Symbol.for('@kobello/sdk/mock');
+const MOCK_MARK = Symbol.for('@kobello-electron/sdk/mock');
 
 const parentOf = (path: string) => path.split('/').slice(0, -1).join('/');
 

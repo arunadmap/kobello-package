@@ -1,15 +1,15 @@
-# @kobello/sdk
+# @kobello-electron/sdk
 
 The API Kobello apps use to talk to the Kobello desktop app: key/value storage, files, notifications, links and app info.
 
 ```bash
-npm install @kobello/sdk
+npm install @kobello-electron/sdk
 ```
 
 The package is **ESM-only** (`import`, not `require`). It works as is with Vite, webpack, esbuild, Rollup and Vitest.
 
 ```ts
-import { kobello, KobelloError } from '@kobello/sdk';
+import { kobello, KobelloError } from '@kobello-electron/sdk';
 
 if (kobello.isAvailable()) {
   await kobello.storage.set('theme', 'dark');
@@ -43,7 +43,7 @@ Outside Kobello (`kobello.isAvailable()` is `false`) every method rejects with `
 ## Testing without the desktop app
 
 ```ts
-import { installMock } from '@kobello/sdk/mock';
+import { installMock } from '@kobello-electron/sdk/mock';
 
 const mock = installMock({ app: { id: 'com.example.notes', permissions: ['storage'] } });
 // ...use kobello as usual; mock.notifications and mock.openedLinks record what happened.
@@ -53,12 +53,12 @@ The mock keeps everything in memory and checks the same paths, sizes and rate li
 `installMock()` throws if the page is already running inside Kobello.
 
 **Jest** runs CommonJS by default and won't load this ESM package from `node_modules`. Either use [Vitest](https://vitest.dev),
-or let Jest transform it: `transformIgnorePatterns: ['/node_modules/(?!@kobello/sdk)']` (with Babel or ts-jest set up for ES modules).
+or let Jest transform it: `transformIgnorePatterns: ['/node_modules/(?!@kobello-electron/sdk)']` (with Babel or ts-jest set up for ES modules).
 
 ## Other entry points
 
-- `@kobello/sdk/shell`: extra methods for Kobello UI only (installing apps, showing app views). Other apps get `PERMISSION_DENIED`.
-- `@kobello/sdk/protocol`: the shared message types, used by the desktop host.
+- `@kobello-electron/sdk/shell`: extra methods for Kobello UI only (installing apps, showing app views). Other apps get `PERMISSION_DENIED`.
+- `@kobello-electron/sdk/protocol`: the shared message types, used by the desktop host.
 
 ## Development
 

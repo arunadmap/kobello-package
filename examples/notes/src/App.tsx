@@ -7,7 +7,7 @@
 //   links          the link to the guide, opened in the user's browser
 
 import { useCallback, useEffect, useState } from 'react';
-import { isKobelloError, kobello, type FileInfo } from '@kobello/sdk';
+import { isKobelloError, kobello, type FileInfo } from '@kobello-electron/sdk';
 
 const NOTES_DIR = 'notes';
 const GUIDE_URL = 'https://github.com/arunadmap/kobello-package/blob/main/docs/GUIDE.md';

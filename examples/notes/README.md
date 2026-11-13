@@ -1,6 +1,6 @@
 # Notes: an example Kobello app
 
-A small notes app that uses every part of `@kobello/sdk`:
+A small notes app that uses every part of `@kobello-electron/sdk`:
 
 | SDK | Used for |
 |---|---|

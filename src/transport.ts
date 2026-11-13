@@ -14,7 +14,7 @@ function requireBridge(): Bridge {
     throw new KobelloError(
       'UNSUPPORTED',
       `This Kobello speaks protocol ${String(bridge.v)}, but this SDK needs protocol ${PROTOCOL_VERSION}. ` +
-        'Update Kobello, or use a version of @kobello/sdk that matches it.',
+        'Update Kobello, or use a version of @kobello-electron/sdk that matches it.',
     );
   }
   return bridge;

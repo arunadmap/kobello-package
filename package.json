@@ -1,5 +1,5 @@
 {
-  "name": "@kobello/sdk",
+  "name": "@kobello-electron/sdk",
   "version": "0.1.0",
   "description": "The API Kobello apps use to talk to the Kobello desktop app.",
   "license": "MIT",
